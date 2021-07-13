@@ -12,16 +12,12 @@ def main():
     """
     pass
 
-    print('> Iniciando...', end="\r", flush=True)
-    driver = setSelenium(False)
-    src_code = dynamic_page(driver, 'https://www.casasbahia.com.br/c/?filtro=d41033&ordenacao=precoCrescente&icid=197947_hp_stc_c7_ps1_b0_pb2&origem=co&faixapreco=899to1413')
-    driver.quit()
+    print('> Iniciando crawler...')
+    soap = init_crawler('https://www.casasbahia.com.br/c/?filtro=d41033&ordenacao=precoCrescente&icid=197947_hp_stc_c7_ps1_b0_pb2&origem=co&faixapreco=899to1413')
 
-    print("> Raspando elementos...", end="\r", flush=True)
-    soap = init_parser(src_code)
-
-    tvs = soap.find('div', class_="Row-sc-1s8ruxj-0 iWSNLk")
-    print(tvs.prettify())
+    tvs = soap.find('div', class_="styles__Wrapper-crf3j2-0 hMJXmq").find('div')
+    for tv in tvs:
+        print(tv.text)
 
 
 if __name__ == "__main__":
