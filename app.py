@@ -17,7 +17,7 @@ def crawl_casas_bahia():
     soap = init_parser(src_code)
 
     tvs = soap.find('div', class_="styles__Wrapper-crf3j2-0 hMJXmq").find('div')
-    print(f'{len(tvs)} tvs encontradas...')
+    print(f'> {len(tvs)} tvs encontradas...')
 
     # start on highets, then decreases
     lowest_tv = float(inf)

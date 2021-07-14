@@ -21,6 +21,7 @@ def setSelenium(console=True, proxy=False):
 
     # Desabilitar notificações
     chrome_options.add_argument("--disable-infobars")
+    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_experimental_option("prefs", {
         "profile.default_content_setting_values.notifications": 2
