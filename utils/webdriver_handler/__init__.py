@@ -24,8 +24,8 @@ def scroll(driver):
 
 def dynamic_page(driver, url):
     driver.get(url)
-    # driver.implicitly_wait(220)
-    sleep(10)
+    driver.implicitly_wait(220)
+    # sleep(10)
     html = driver.find_element_by_tag_name('html')
     return html.get_attribute('outerHTML')
 
