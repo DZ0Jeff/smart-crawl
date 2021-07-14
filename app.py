@@ -1,11 +1,12 @@
 from time import sleep
 from utils.webdriver_handler import dynamic_page
-from utils.parser_handler import init_parser
+from utils.parser_handler import init_crawler, init_parser
 from utils.setup import setSelenium
 from utils.telegram import TelegramBot
 import os
 from math import inf
 import schedule
+from selenium.common.exceptions import NoSuchElementException
 
 
 
@@ -52,6 +53,40 @@ def crawl_casas_bahia(telegram):
     telegram.send_message(current_tv)
 
 
+def crawl_magalu(telegram):
+    """
+    Crawl magazine luiza tvs prices
+
+    telegram: telegram client (optional)
+    """
+    url = "https://www.magazineluiza.com.br/smart-tv/tv-e-video/s/et/elit?sort=type%3Aprice%2Corientation%3Aasc"
+    driver = setSelenium(False)
+    driver.get(url)
+    driver.implicitly_wait(10)
+
+    container = driver.find_element_by_xpath('//*[@id="showcase"]/ul[1]')
+    for index, item in enumerate(container.find_elements_by_tag_name("a")):
+        print('\n')
+        tv = item.find_element_by_tag_name('h3').text
+        link = item.get_attribute('href')
+
+        # change xpath to get data-css
+        try:
+            price = item.find_element_by_xpath(f'//*[@id="showcase"]/ul[1]/a[{index + 1}]/div[3]/div[2]/div[2]/span[1]').text
+
+        except NoSuchElementException:
+            price = item.find_element_by_xpath(f'//*[@id="showcase"]/ul[1]/a[{index + 1}]/div[3]/div[2]/div[2]').text
+
+
+        msg = f"\nTv: {tv}\n\nPreço: {price}\n\nLink: {link}"
+        print(msg)
+
+        # "//*[@id="showcase"]/ul[1]/a[1]/div[3]/div[2]/div[2]/span[1]"
+        # "//*[@id="showcase"]/ul[1]/a[2]/div[3]/div[2]/div[2]"
+    
+
+    driver.quit()
+
 def main():
     """
     Insert yout code here
@@ -59,13 +94,15 @@ def main():
 
     print('> Iniciando crawler...')
     telegram = TelegramBot(ROOT_DIR)
-    crawl_casas_bahia(telegram)    
+    # crawl_casas_bahia(telegram)    
+    crawl_magalu(telegram)
 
 
 if __name__ == "__main__":
-    schedule.every().day.at("12:00").do(main)
+    # schedule.every().day.at("12:00").do(main)
    
-    while True:
-        schedule.run_pending()
-        sleep(1)
+    # while True:
+    #     schedule.run_pending()
+    #     sleep(1)
 
+    main()
