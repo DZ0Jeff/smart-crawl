@@ -1,9 +1,8 @@
 from utils.webdriver_handler import dynamic_page
-from utils.parser_handler import init_crawler, init_parser
+from utils.parser_handler import init_parser
 from utils.setup import setSelenium
 import os
-from decimal import Decimal
-from re import sub
+from math import inf
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,11 +19,12 @@ def crawl_casas_bahia():
     tvs = soap.find('div', class_="styles__Wrapper-crf3j2-0 hMJXmq").find('div')
     print(f'{len(tvs)} tvs encontradas...')
 
-    lowest_tv = 0
+    # start on highets, then decreases
+    lowest_tv = float(inf)
     current_tv = ''
 
     for index, tv in enumerate(tvs):
-        print(f"Verificando {index + 1} tv...")
+        print(f"Verificando {index + 1} tv...", end="\r")
         link = tv.find('a', class_="styles__Title-sc-1gzprri-1 kWIhVj")['href']
         title = tv.find('a', class_="styles__Title-sc-1gzprri-1 kWIhVj").get_text()
         try:
@@ -35,16 +35,16 @@ def crawl_casas_bahia():
 
         current_tv_item = f"Título: {title}\n\nPreço: {price}\n\nLink: {link}"
 
-        sanitized_price = price.split(' ')[2]
-        price_final = Decimal(sub(r'[^\d.]', '', sanitized_price))
-        print(price_final)
-        # format price to validade
-        if price != 'Não disponível...' and lowest_tv < price_final:
-            lowest_tv = price
-            current_tv = current_tv_item
+        if price != 'Não disponível...':
+            raw_price = price.split(' ')[2]
+            sanitized_price = raw_price.split(',')[0]
 
-    print(f"Menor preço: {lowest_tv}")
-    print(f"TV atual: {current_tv}")
+            # format price to validade
+            if lowest_tv > float(sanitized_price):
+                lowest_tv = float(sanitized_price)
+                current_tv = current_tv_item
+
+    print(f"TV com menor preço: {current_tv}")
 
 
 def main():
