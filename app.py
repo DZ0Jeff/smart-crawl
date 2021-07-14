@@ -2,15 +2,17 @@ from time import sleep
 from utils.webdriver_handler import dynamic_page
 from utils.parser_handler import init_parser
 from utils.setup import setSelenium
+from utils.telegram import TelegramBot
 import os
 from math import inf
 import schedule
 
 
+
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def crawl_casas_bahia():
+def crawl_casas_bahia(telegram):
     driver = setSelenium(False)
     src_code = dynamic_page(driver, "https://www.casasbahia.com.br/c/?filtro=d41033&ordenacao=precoCrescente&icid=197947_hp_stc_c7_ps1_b0_pb2&origem=co&faixapreco=899to1413")
     driver.quit()
@@ -35,7 +37,7 @@ def crawl_casas_bahia():
         except AttributeError:
             price = 'Não disponível...' 
 
-        current_tv_item = f"Título: {title}\n\nPreço: {price}\n\nLink: {link}"
+        current_tv_item = f"Tv: {title}\n\nPreço: {price}\n\nLink: {link}"
 
         if price != 'Não disponível...':
             raw_price = price.split(' ')[2]
@@ -47,6 +49,7 @@ def crawl_casas_bahia():
                 current_tv = current_tv_item
 
     print(f"TV com menor preço: {current_tv}")
+    telegram.send_message(current_tv)
 
 
 def main():
@@ -55,7 +58,9 @@ def main():
     """
 
     print('> Iniciando crawler...')
-    crawl_casas_bahia()    
+    telegram = TelegramBot(ROOT_DIR)
+    crawl_casas_bahia(telegram)    
+
 
 if __name__ == "__main__":
     schedule.every().day.at("12:00").do(main)
@@ -63,3 +68,4 @@ if __name__ == "__main__":
     while True:
         schedule.run_pending()
         sleep(1)
+
