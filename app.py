@@ -1,8 +1,10 @@
+from time import sleep
 from utils.webdriver_handler import dynamic_page
 from utils.parser_handler import init_parser
 from utils.setup import setSelenium
 import os
 from math import inf
+import schedule
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -56,4 +58,8 @@ def main():
     crawl_casas_bahia()    
 
 if __name__ == "__main__":
-    main()
+    schedule.every().day.at("12:00").do(main)
+   
+    while True:
+        schedule.run_pending()
+        sleep(1)
