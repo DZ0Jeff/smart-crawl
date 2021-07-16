@@ -35,6 +35,5 @@ def check_tag(tag):
         handler = tag
         return handler
 
-    except Exception as error:
-        print('Error')
-        return 'Não localizado...'
+    except AttributeError:
+        return 'Não Disponível'
