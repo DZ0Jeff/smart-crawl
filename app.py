@@ -121,10 +121,13 @@ def main():
     """
     Insert yout code here
     """
-    print('> Iniciando crawler...')
+    print('> Iniciando Smart TV...')
     telegram = TelegramBot(ROOT_DIR)
-    crawl_casas_bahia(telegram)    
+    print('> iniciando Casas Bahia...')
+    crawl_casas_bahia(telegram)
+    print('> Iniciando Magalu...')    
     crawl_magalu(telegram)
+    print('> Extração Finalizada!')
 
 
 if __name__ == "__main__":
@@ -132,6 +135,6 @@ if __name__ == "__main__":
     schedule.every().day.at("12:00").do(main)
    
     while True:
-        print('Esperando...')
+        print('Esperando...', end="\r")
         schedule.run_pending()
         sleep(1)
