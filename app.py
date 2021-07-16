@@ -123,6 +123,7 @@ def main():
     """
     print('> Iniciando Smart TV...')
     telegram = TelegramBot(ROOT_DIR)
+    telegram.send_message("[SMART CRAWLER]\nEnviando os preços de smart TVs mais baixos...")
     print('> iniciando Casas Bahia...')
     crawl_casas_bahia(telegram)
     print('> Iniciando Magalu...')    
