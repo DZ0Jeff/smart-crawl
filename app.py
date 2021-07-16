@@ -31,7 +31,7 @@ def crawl_casas_bahia(telegram):
         tvs = soap.find('div', class_="styles__Wrapper-crf3j2-0 hMJXmq").find('div')
     
     except AttributeError:
-        crawl_casas_bahia(telegram)
+        telegram.send_message('> Erro ao pegar os preços das casas bahia!')
         return
 
     print(f'> {len(tvs)} tvs encontradas...')
