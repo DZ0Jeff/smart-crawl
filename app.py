@@ -27,7 +27,13 @@ def crawl_casas_bahia(telegram):
     print('> raspando preços...')
     soap = init_parser(src_code)
 
-    tvs = soap.find('div', class_="styles__Wrapper-crf3j2-0 hMJXmq").find('div')
+    try:
+        tvs = soap.find('div', class_="styles__Wrapper-crf3j2-0 hMJXmq").find('div')
+    
+    except AttributeError:
+        crawl_casas_bahia(telegram)
+        return
+
     print(f'> {len(tvs)} tvs encontradas...')
 
     # start on highets, then decreases
