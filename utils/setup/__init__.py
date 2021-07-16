@@ -1,7 +1,6 @@
 import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from fake_useragent import UserAgent
 from utils.build import resource_path
 from utils.proxy import init_proxy
 from dotenv import load_dotenv
@@ -10,8 +9,6 @@ from dotenv import load_dotenv
 def setSelenium(console=True, proxy=False):
     # configuração do selenium
     chrome_options = Options()
-    ua = UserAgent()
-    userAgent = ua.random
     load_dotenv()
 
     if not console:
@@ -27,9 +24,7 @@ def setSelenium(console=True, proxy=False):
         "profile.default_content_setting_values.notifications": 2
     })
     # evitar detecção anti-bot
-    # chrome_options.add_argument(f'user-agent={userAgent}')
-
-    # chrome_options.add_argument("user-data-dir=Pessoa_1") 
+ 
     chrome_options.add_argument(f'user-agent=Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36')
     chrome_options.add_argument("--disable-blink-features")
     chrome_options.add_argument('--disable-blink-features=AutomationControlled')

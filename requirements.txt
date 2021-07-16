@@ -6,7 +6,6 @@ cffi==1.14.5
 chardet==4.0.0
 cryptography==3.4.7
 et-xmlfile==1.1.0
-fake-useragent==0.1.11
 flatten-json==0.1.13
 httmock==1.4.0
 idna==2.10
