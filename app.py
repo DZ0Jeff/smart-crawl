@@ -145,7 +145,7 @@ def crawl_amazon(telegram):
 
     soap = init_crawler(url)
 
-    if soap == None:
+    if soap == None or soap == False:
         return
 
     container = soap.find('div', class_="s-main-slot s-result-list s-search-results sg-row")
