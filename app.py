@@ -1,5 +1,5 @@
 from time import sleep
-from utils.webdriver_handler import check_tag, dynamic_page
+from utils.webdriver_handler import dynamic_page
 from utils.parser_handler import init_crawler, init_parser
 from utils.setup import setSelenium
 from utils.telegram import TelegramBot
@@ -9,8 +9,10 @@ import schedule
 from selenium.common.exceptions import NoSuchElementException
 
 
-
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+AMAZON_LOWERS_PRICES = []
+CASAS_BAHIA_LOWEST_PRICES = []
+MAGALU_LOWERS_PRICES = []
 
 
 def convert_price(price):
@@ -38,20 +40,26 @@ def crawl_casas_bahia(telegram):
 
     # start on highets, then decreases
     lowest_tv = float(inf)
-    current_tv = ''
+    current_tv = dict()
 
     for index, tv in enumerate(tvs):
         print(f"Verificando {index + 1} tv...", end="\r")
         link = tv.find('a', class_="styles__Title-sc-1gzprri-1 kWIhVj")['href']
         title = tv.find('a', class_="styles__Title-sc-1gzprri-1 kWIhVj").get_text()
+        
         try:
             price = tv.find('a', class_="styles__PriceWrapper-sc-1idhk7x-0 hvGsJA").get_text(separator=" ")
         
         except AttributeError:
             price = 'Não disponível...' 
 
-        current_tv_item = f"Tv: {title}\n\nPreço: {price}\n\nLink: {link}"
+        current_tv_item = {
+            'Título': title, 
+            'preço': price, 
+            'link': link
+        }
 
+        # refactor in function
         if price != 'Não disponível...':
             raw_price = price.split(' ')[2]
             sanitized_price = raw_price.split(',')[0]
@@ -61,8 +69,12 @@ def crawl_casas_bahia(telegram):
                 lowest_tv = float(sanitized_price)
                 current_tv = current_tv_item
 
-    print(f"TV com menor preço: {current_tv}")
-    telegram.send_message(current_tv)
+    # refactor in function
+    if not current_tv['link'] in CASAS_BAHIA_LOWEST_PRICES:
+        CASAS_BAHIA_LOWEST_PRICES.append(current_tv['link'])
+        msg = f"Tv: {current_tv['Título']}\n\nPreço: {current_tv['preço']}\n\nLink: {current_tv['link']}"
+        print(f"TV com menor preço: {msg}")
+        telegram.send_message(msg)
 
 
 def crawl_magalu(telegram):
@@ -76,16 +88,18 @@ def crawl_magalu(telegram):
     driver = setSelenium(False)
     try:
         driver.get(url)
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(220)
 
         lowest_tv = float(inf)
-        current_msg = ''
+        current_msg = dict()
         container = driver.find_element_by_xpath('//*[@id="showcase"]/ul[1]')
+        print('a extrair')
         for index, item in enumerate(container.find_elements_by_tag_name("a")):
             print(f"Extraindo {index + 1} produto", end="\r")
 
             tv = item.find_element_by_tag_name('h3').text
             link = item.get_attribute('href')
+            print(tv)
 
             test_tv = tv.lower()
             if test_tv.startswith('smart tv'):
@@ -100,8 +114,10 @@ def crawl_magalu(telegram):
                     except Exception:
                         price = "Não disponível..."
 
-                msg = f"\nTv: {tv}\n\nPreço: {price}\n\nLink: {link}"
-                            
+                msg = {'tv': tv, 'price': price, 'link': link}
+                print(msg)
+
+                # refactor in function    
                 if price != "Não disponível...":
                     format_price = convert_price(price)
                     
@@ -109,9 +125,17 @@ def crawl_magalu(telegram):
                         lowest_tv = format_price
                         current_msg = msg
 
-        print(lowest_tv)
-        print(current_msg)
-        telegram.send_message(current_msg)
+        if not 'link' in current_msg:
+            print('> Erro ao extraír dados! (Sistema anti-bot ou algo mudou?)')
+            driver.quit()
+            return
+
+        # refactor in function
+        if current_msg['link'] in MAGALU_LOWERS_PRICES:
+            MAGALU_LOWERS_PRICES.append(current_msg['link'])
+            format_msg = f"\nTv: {current_msg['tv']}\n\nPreço: {current_msg['price']}\n\nLink: {current_msg['link']}"
+            print(format_msg)
+            telegram.send_message(format_msg)
 
     except Exception:
         driver.quit()
@@ -148,33 +172,43 @@ def crawl_amazon(telegram):
     if soap == None or soap == False:
         return
 
+    # save_to_html(soap)
+
     container = soap.find('div', class_="s-main-slot s-result-list s-search-results sg-row")
+
+    if container == None:
+        print('> Sistema anti-bot detectado, tente novamente mais tarde!')
+        return
 
     try:
         items = container.find_all('div', class_="sg-col-4-of-12 s-result-item s-asin sg-col-4-of-16 sg-col sg-col-4-of-20")
 
     except AttributeError:
-        print('> Dados não carrregados..., tentand novamente!')
-        crawl_amazon(telegram)
-        return 
+        print('> Dados não carregados!, continuando...')
+        pass 
     
     lowest_tv = float(inf)
-    current_msg = ''
+    current_msg = {}
     for item in items:
         title = item.find('h2', class_="a-size-mini a-spacing-none a-color-base s-line-clamp-4").text
         price = check_price(item)
         link = "https://www.amazon.com.br" + item.find('a')['href']
 
-        msg = f"{title}\n{price}\n\n{link}"
+        msg = {'Título': title, 'Preço': price, 'link': link}
+        # refactor in function
         if price != 'Não Disponível':
             format_price = convert_price(price)
             
             if lowest_tv > format_price:
                 lowest_tv = format_price
                 current_msg = msg
-    
-    print(current_msg)
-    telegram.send_message(current_msg)
+
+    # refactor in function
+    if not current_msg['link'] in AMAZON_LOWERS_PRICES:
+        AMAZON_LOWERS_PRICES.append(current_msg['link'])
+        format_msg = f"{current_msg['Título']}\n{current_msg['Preço']}\n\n{current_msg['link']}"
+        print(format_msg)
+        telegram.send_message(format_msg)
 
 
 def main():
@@ -184,12 +218,16 @@ def main():
     print('> Iniciando Smart TV...')
     telegram = TelegramBot(ROOT_DIR)
     telegram.send_message("[SMART CRAWLER]\nEnviando os preços de smart TVs mais baixos...")
+    
     print('> iniciando Casas Bahia...')
     crawl_casas_bahia(telegram)
+    
     print('> Iniciando Amazon')
     crawl_amazon(telegram)
-    print('> Iniciando Magalu...')    
-    crawl_magalu(telegram)
+    
+    # print('> Iniciando Magalu...')    
+    # crawl_magalu(telegram)
+    
     print('> Extração Finalizada!')
     
 
