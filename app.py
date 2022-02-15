@@ -95,30 +95,44 @@ def crawl_magalu(telegram):
 
         lowest_tv = float(inf)
         current_msg = dict()
-        container = driver.find_element_by_xpath('//*[@id="showcase"]/ul[1]')
-        print('a extrair')
+        print('> A extrair')
+        try:
+            driver.implicitly_wait(0)
+            container = driver.find_element_by_xpath('//*[@id="showcase"]/ul[1]')
+
+        except NoSuchElementException:
+            driver.quit()
+            print("> Container não achado!")
+            return
+
+        else:
+            driver.implicitly_wait(220)
+        
         for index, item in enumerate(container.find_elements_by_tag_name("a")):
-            print(f"Extraindo {index + 1} produto", end="\r")
+            print(f"> Extraindo {index + 1} produto", end="\r")
 
             tv = item.find_element_by_tag_name('h3').text
             link = item.get_attribute('href')
-            print(tv)
+            # print(tv)
 
             test_tv = tv.lower()
-            if test_tv.startswith('smart tv'):
+            if test_tv.startswith('smart tv led'):
             # change xpath to get data-css
                 try:
+                    driver.implicitly_wait(0)
                     price = item.find_element_by_xpath(f'//*[@id="showcase"]/ul[1]/a[{index + 1}]/div[3]/div[2]/div[2]/span[1]').text
 
                 except NoSuchElementException:
                     try:
+                        driver.implicitly_wait(0)
                         price = item.find_element_by_xpath(f'//*[@id="showcase"]/ul[1]/a[{index + 1}]/div[3]/div[2]/div[2]').text
 
                     except Exception:
+                        driver.implicitly_wait(220)
                         price = "Não disponível..."
 
                 msg = {'tv': tv, 'price': price, 'link': link}
-                print(msg)
+                # print(msg)
 
                 # refactor in function    
                 if price != "Não disponível...":
@@ -134,10 +148,11 @@ def crawl_magalu(telegram):
             return
 
         # refactor in function
-        if current_msg['link'] in MAGALU_LOWERS_PRICES:
+        if not current_msg['link'] in MAGALU_LOWERS_PRICES:
             MAGALU_LOWERS_PRICES.append(current_msg['link'])
+            driver.quit()
             format_msg = f"\nTv: {current_msg['tv']}\n\nPreço: {current_msg['price']}\n\nLink: {current_msg['link']}"
-            print(format_msg)
+            # print(format_msg)
             telegram.send_message(format_msg)
 
     except Exception:
@@ -239,16 +254,22 @@ def main():
     print('> Iniciando Amazon')
     crawl_amazon(telegram)
     
-    # print('> Iniciando Magalu...')    
-    # crawl_magalu(telegram)
+    print('> Iniciando Magalu...')    
+    crawl_magalu(telegram)
     
     print('> Extração Finalizada!')
     
 
 if __name__ == "__main__":
+    # main()
     schedule.every().day.at("12:00").do(main)
    
     while True:
-        print('Esperando...', end="\r")
-        schedule.run_pending()
-        sleep(1)
+        try:
+            print('> Esperando...', end="\r")
+            schedule.run_pending()
+            sleep(1)
+        
+        except KeyboardInterrupt:
+            print('> Saindo...')
+            break
