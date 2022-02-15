@@ -246,7 +246,6 @@ def main():
     
 
 if __name__ == "__main__":
-    main()
     schedule.every().day.at("12:00").do(main)
    
     while True:
