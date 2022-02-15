@@ -33,7 +33,7 @@ def crawl_casas_bahia(telegram):
         tvs = soap.find('div', class_="styles__Wrapper-crf3j2-0 hMJXmq").find('div')
     
     except AttributeError:
-        telegram.send_message('> Erro ao pegar os preços das casas bahia!')
+        # telegram.send_message('> Erro ao pegar os preços das casas bahia!')
         return
 
     print(f'> {len(tvs)} tvs encontradas...')
@@ -217,7 +217,7 @@ def main():
     """
     print('> Iniciando Smart TV...')
     telegram = TelegramBot(ROOT_DIR)
-    telegram.send_message("[SMART CRAWLER]\nEnviando os preços de smart TVs mais baixos...")
+    # telegram.send_message("[SMART CRAWLER]\nEnviando os preços de smart TVs mais baixos...")
     
     print('> iniciando Casas Bahia...')
     crawl_casas_bahia(telegram)
@@ -232,7 +232,6 @@ def main():
     
 
 if __name__ == "__main__":
-    main()
     schedule.every().day.at("12:00").do(main)
    
     while True:
