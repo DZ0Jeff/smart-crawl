@@ -22,10 +22,13 @@ def scroll(driver):
         last_height = new_height
 
 
-def dynamic_page(driver, url):
+def dynamic_page(driver, url, scroll_set=False):
     driver.get(url)
     driver.implicitly_wait(220)
     # sleep(10)
+    if scroll_set:
+        scroll(driver)
+        
     html = driver.find_element_by_tag_name('html')
     return html.get_attribute('outerHTML')
 

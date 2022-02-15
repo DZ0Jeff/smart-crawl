@@ -23,14 +23,16 @@ def convert_price(price):
 
 def crawl_casas_bahia(telegram):
     driver = setSelenium(False)
+    driver.maximize_window()
     src_code = dynamic_page(driver, "https://www.casasbahia.com.br/c/?filtro=d41033&ordenacao=precoCrescente&icid=197947_hp_stc_c7_ps1_b0_pb2&origem=co&faixapreco=899to1413")
+    # driver.save_screenshot('screen.png')
     driver.quit()
 
     print('> raspando preços...')
     soap = init_parser(src_code)
 
     try:
-        tvs = soap.find('div', class_="styles__Wrapper-crf3j2-0 hMJXmq").find('div')
+        tvs = soap.find('div', class_="sc-881f8143-0 PQLIb").find('div', class_="sc-18eb4054-0 dPlWZd").find_all('div', class_="sc-5fec12f4-0 cxOoNz sc-881f8143-1 dCDlKd")
     
     except AttributeError as error:
         # telegram.send_message('> Erro ao pegar os preços das casas bahia!')
@@ -45,11 +47,11 @@ def crawl_casas_bahia(telegram):
 
     for index, tv in enumerate(tvs):
         print(f"Verificando {index + 1} tv...", end="\r")
-        link = tv.find('a', class_="styles__Title-sc-1gzprri-1 kWIhVj")['href']
-        title = tv.find('a', class_="styles__Title-sc-1gzprri-1 kWIhVj").get_text()
+        link = tv.find('a', class_="sc-5b0743c3-4 fdeIsi")['href']
+        title = tv.find('a', class_="sc-5b0743c3-4 fdeIsi")['title']
         
         try:
-            price = tv.find('a', class_="styles__PriceWrapper-sc-1idhk7x-0 hvGsJA").get_text(separator=" ")
+            price = tv.find('span', class_="sc-47246d2e-7 eToubG").get_text(separator=" ")
         
         except AttributeError:
             price = 'Não disponível...' 
@@ -234,8 +236,8 @@ def main():
     print('> iniciando Casas Bahia...')
     crawl_casas_bahia(telegram)
     
-    print('> Iniciando Amazon')
-    crawl_amazon(telegram)
+    # print('> Iniciando Amazon')
+    # crawl_amazon(telegram)
     
     # print('> Iniciando Magalu...')    
     # crawl_magalu(telegram)
@@ -244,6 +246,7 @@ def main():
     
 
 if __name__ == "__main__":
+    main()
     schedule.every().day.at("12:00").do(main)
    
     while True:
