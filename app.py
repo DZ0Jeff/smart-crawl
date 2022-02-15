@@ -236,8 +236,8 @@ def main():
     print('> iniciando Casas Bahia...')
     crawl_casas_bahia(telegram)
     
-    # print('> Iniciando Amazon')
-    # crawl_amazon(telegram)
+    print('> Iniciando Amazon')
+    crawl_amazon(telegram)
     
     # print('> Iniciando Magalu...')    
     # crawl_magalu(telegram)
